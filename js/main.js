@@ -29,7 +29,7 @@ function setMap() {
         var us = topojson.feature(unitedStates, unitedStates.objects.US_shapefile).features;
 
         console.log(us);
-        
+
         var states = map.selectAll(".states")
             .data(us)
             .enter()
