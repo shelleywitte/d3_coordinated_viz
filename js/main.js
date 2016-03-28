@@ -10,9 +10,7 @@ function setMap() {
         .attr("width", width)
         .attr("height", height);
 
-    var projection = d3.geo.albers()
-        .center([5, 37])
-        .rotate([-100, 0, 0])
+    var projection = d3.geo.albersUsa()
         .parallels([30, 46])
         .scale(600)
         .translate([width / 2, height / 2]);
