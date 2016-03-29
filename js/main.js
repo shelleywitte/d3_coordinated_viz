@@ -6,7 +6,7 @@ var expressed = attrArray[0]; //initial attribute
 window.onload = setMap();
 
 function setMap() {
-    var width = 960,
+    var width = window.innerWidth * 0.5,
         height = 500;
 
     var map = d3.select("body")
@@ -16,7 +16,7 @@ function setMap() {
         .attr("height", height);
 
     var projection = d3.geo.albersUsa()
-        .scale(1000)
+        .scale(630)
         .translate([width / 2, height / 2]);
 
     var path = d3.geo.path()
@@ -35,6 +35,8 @@ function setMap() {
         var colorScale = makeColorScale(csvData);
 
         setEnumerationUnits(us, map, path, colorScale);
+
+        setChart(csvData, colorScale);
 
     };
 };
@@ -100,6 +102,8 @@ function makeColorScale(data) {
     colorScale.domain(domainArray);
 
     return colorScale;
+
+    console.log(colorScale.quantiles());
 };
 
 function choropleth(props, colorScale) {
@@ -110,6 +114,41 @@ function choropleth(props, colorScale) {
     } else {
         return "#CCC";
     };
+};
+
+function setChart(csvData, colorScale) {
+    var chartWidth = window.innerWidth * 0.425,
+        chartHeight = 460;
+
+    var chart = d3.select("body")
+        .append("svg")
+        .attr("width", chartWidth)
+        .attr("height", chartHeight)
+        .attr("class", "chart");
+
+    var yScale = d3.scale.linear()
+        .range([0, chartHeight])
+        .domain([0, 105]);
+
+    var bars = chart.selectAll(".bars")
+        .data(csvData)
+        .enter()
+        .append("rect")
+        .attr("class", function(d) {
+            return "bars " + d.name;
+        })
+        .attr("width", chartWidth / csvData.length - 1)
+        .attr("x", function(d, i) {
+            return i * (chartWidth / csvData.length);
+        })
+        .attr("height", function(d) {
+            return yScale(parseFloat(d[expressed]));
+        })
+        .attr("y", function(d) {
+            return chartHeight - yScale(parseFloat(d[expressed]));
+        });
+
+
 };
 
 })(); //last line of main.js
