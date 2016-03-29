@@ -30,12 +30,11 @@ function setMap() {
     function callback(error, csvData, unitedStates) {
         var us = topojson.feature(unitedStates, unitedStates.objects.US_shapefile).features;
 
-        console.log(us);
-        console.log(csvData);
-
         us = joinData(us, csvData);
 
-        setEnumerationUnits(us, map, path);
+        var colorScale = makeColorScale(csvData);
+
+        setEnumerationUnits(us, map, path, colorScale);
 
     };
 };
@@ -65,7 +64,7 @@ function joinData (us, csvData) {
     return us;
 };
 
-function setEnumerationUnits(us, map, path) {
+function setEnumerationUnits(us, map, path, colorScale) {
 
     var states = map.selectAll(".states")
         .data(us)
@@ -74,7 +73,43 @@ function setEnumerationUnits(us, map, path) {
         .attr("class", function(d) {
             return "states " + d.properties.name;
         })
-        .attr("d", path);
+        .attr("d", path)
+        .style("fill", function(d){
+            return choropleth(d.properties, colorScale);
+        });
 }
+
+function makeColorScale(data) {
+    var colorClasses = [
+        "#f7f7f7",
+        "#cccccc",
+        "#969696",
+        "#636363",
+        "#252525"
+    ];
+
+    var colorScale = d3.scale.quantile()
+        .range(colorClasses);
+
+    var domainArray = [];
+    for (var i=0; i<data.length; i++) {
+        var val = parseFloat(data[i][expressed]);
+        domainArray.push(val);
+    };
+
+    colorScale.domain(domainArray);
+
+    return colorScale;
+};
+
+function choropleth(props, colorScale) {
+    var val = parseFloat(props[expressed]);
+
+    if (val && val != NaN) {
+        return colorScale(val);
+    } else {
+        return "#CCC";
+    };
+};
 
 })(); //last line of main.js
