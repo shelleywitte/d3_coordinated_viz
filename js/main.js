@@ -1,3 +1,8 @@
+(function(){
+//pseudo-global variables
+var attrArray = ["varA", "varB", "varC", "varD", "varE"]; //list of attributes
+var expressed = attrArray[0]; //initial attribute
+
 window.onload = setMap();
 
 function setMap() {
@@ -25,34 +30,51 @@ function setMap() {
     function callback(error, csvData, unitedStates) {
         var us = topojson.feature(unitedStates, unitedStates.objects.US_shapefile).features;
 
-        var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"];
+        console.log(us);
+        console.log(csvData);
 
-        for (var i=0; i<csvData.length; i++) {
-            var csvState = csvData[i];
-            var csvKey = csvState.name;
+        us = joinData(us, csvData);
 
-            for (var a=0; a<us.length; a++) {
+        setEnumerationUnits(us, map, path);
 
-                var geojsonProps = us[a].properties;
-                var geojsonKey = geojsonProps.name;
-
-                if (geojsonKey == csvKey) {
-
-                    attrArray.forEach(function(attr) {
-                        var val = parseFloat(csvState[attr]);
-                        geojsonProps[attr] = val;
-                    });
-                };
-            };
-        };
-
-        var states = map.selectAll(".states")
-            .data(us)
-            .enter()
-            .append("path")
-            .attr("class", function(d) {
-                return "states " + d.properties.name;
-            })
-            .attr("d", path);
     };
 };
+
+function joinData (us, csvData) {
+    var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"];
+
+    for (var i=0; i<csvData.length; i++) {
+        var csvState = csvData[i];
+        var csvKey = csvState.name;
+
+        for (var a=0; a<us.length; a++) {
+
+            var geojsonProps = us[a].properties;
+            var geojsonKey = geojsonProps.name;
+
+            if (geojsonKey == csvKey) {
+
+                attrArray.forEach(function(attr) {
+                    var val = parseFloat(csvState[attr]);
+                    geojsonProps[attr] = val;
+                });
+            };
+        };
+    };
+
+    return us;
+};
+
+function setEnumerationUnits(us, map, path) {
+
+    var states = map.selectAll(".states")
+        .data(us)
+        .enter()
+        .append("path")
+        .attr("class", function(d) {
+            return "states " + d.properties.name;
+        })
+        .attr("d", path);
+}
+
+})(); //last line of main.js
