@@ -2,7 +2,7 @@ window.onload = setMap();
 
 function setMap() {
     var width = 960,
-        height = 460;
+        height = 500;
 
     var map = d3.select("body")
         .append("svg")
@@ -11,8 +11,7 @@ function setMap() {
         .attr("height", height);
 
     var projection = d3.geo.albersUsa()
-        .parallels([30, 46])
-        .scale(600)
+        .scale(1000)
         .translate([width / 2, height / 2]);
 
     var path = d3.geo.path()
@@ -26,7 +25,26 @@ function setMap() {
     function callback(error, csvData, unitedStates) {
         var us = topojson.feature(unitedStates, unitedStates.objects.US_shapefile).features;
 
-        console.log(us);
+        var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"];
+
+        for (var i=0; i<csvData.length; i++) {
+            var csvState = csvData[i];
+            var csvKey = csvState.name;
+
+            for (var a=0; a<us.length; a++) {
+
+                var geojsonProps = us[a].properties;
+                var geojsonKey = geojsonProps.name;
+
+                if (geojsonKey == csvKey) {
+
+                    attrArray.forEach(function(attr) {
+                        var val = parseFloat(csvState[attr]);
+                        geojsonProps[attr] = val;
+                    });
+                };
+            };
+        };
 
         var states = map.selectAll(".states")
             .data(us)
