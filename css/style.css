@@ -4,12 +4,12 @@
     margin: 10px 0 0 20px;
 }
 
-.chart {
+/*.chart {
     background-color: rgba(128,128,128,.2);
     border: medium solid #999;
     float: right;
     margin: 10px 20px 0 0;
-}
+}*/
 
 .states {
     stroke: #000;
