@@ -1,12 +1,12 @@
 (function(){
 //pseudo-global variables
-var attrArray = ["varA", "varB", "varC", "varD", "varE"]; //list of attributes
+var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"]; //list of attributes
 var expressed = attrArray[0]; //initial attribute
 
 window.onload = setMap();
 
 function setMap() {
-    var width = window.innerWidth * 0.5,
+    var width = window.innerWidth * 0.6,
         height = 500;
 
     var map = d3.select("body")
@@ -16,7 +16,7 @@ function setMap() {
         .attr("height", height);
 
     var projection = d3.geo.albersUsa()
-        .scale(630)
+        .scale(750)
         .translate([width / 2, height / 2]);
 
     var path = d3.geo.path()
@@ -42,7 +42,6 @@ function setMap() {
 };
 
 function joinData (us, csvData) {
-    var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"];
 
     for (var i=0; i<csvData.length; i++) {
         var csvState = csvData[i];
@@ -77,17 +76,18 @@ function setEnumerationUnits(us, map, path, colorScale) {
         })
         .attr("d", path)
         .style("fill", function(d){
+
             return choropleth(d.properties, colorScale);
         });
 }
 
 function makeColorScale(data) {
     var colorClasses = [
-        "#f7f7f7",
-        "#cccccc",
-        "#969696",
-        "#636363",
-        "#252525"
+        "#ffffb2",
+        "#fecc5c",
+        "#fd8d3c",
+        "#f03b20",
+        "#bd0026"
     ];
 
     var colorScale = d3.scale.quantile()
@@ -103,20 +103,26 @@ function makeColorScale(data) {
 
     return colorScale;
 
-    console.log(colorScale.quantiles());
 };
 
 function choropleth(props, colorScale) {
     var val = parseFloat(props[expressed]);
 
-    if (val && val != NaN) {
-        return colorScale(val);
-    } else {
+    if (isNaN(val)) {
         return "#CCC";
+    } else {
+        return colorScale(val);
     };
 };
 
 function setChart(csvData, colorScale) {
+    var minmax = [
+        d3.min(csvData, function(d) {
+            return parseFloat(d[expressed]); }),
+        d3.max(csvData, function(d) {
+            return parseFloat(d[expressed]); })
+    ];
+
     var chartWidth = window.innerWidth * 0.425,
         chartHeight = 460;
 
@@ -127,8 +133,8 @@ function setChart(csvData, colorScale) {
         .attr("class", "chart");
 
     var yScale = d3.scale.linear()
-        .range([0, chartHeight])
-        .domain([0, 105]);
+        .range([10, chartHeight - 10])
+        .domain(minmax);
 
     var bars = chart.selectAll(".bars")
         .data(csvData)
@@ -146,8 +152,32 @@ function setChart(csvData, colorScale) {
         })
         .attr("y", function(d) {
             return chartHeight - yScale(parseFloat(d[expressed]));
+        })
+        .style("fill", function(d) {
+            return choropleth(d, colorScale);
         });
 
+    var numbers = chart.selectAll(".numbers")
+        .data(csvData)
+        .enter()
+        .append("text")
+        .sort(function(a, b) {
+            return a[expressed]-b[expressed]
+        })
+        .attr("class", function(d){
+            return "numbers " + d.name;
+        })
+        .attr("text-anchor", "middle")
+        .attr("x", function(d, i){
+            var fraction = chartWidth / csvData.length;
+            return i * fraction + (fraction - 1) / 2;
+        })
+        .attr("y", function(d){
+            return chartHeight - yScale(parseFloat(d[expressed])) + 15;
+        })
+        .text(function(d){
+            return d[expressed];
+        });
 
 };
 
