@@ -1,6 +1,9 @@
 (function(){
-//pseudo-global variables
-var attrArray = ["All students", "Male", "Female", "White", "Black", "Hispanic", "Asian", "American Indian/Alaska Native", "Native Hawaiian/Other Pacific Islander", "Two or more races", "Eligible for National Lunch Program", "Not eligible for National Lunch Program"]; //list of attributes
+
+// variables for data join
+var attrArray = ["All students", "Male students", "Female students", "White students", "Black students", "Hispanic students", "Asian students", "American Indian/Alaska Native students", "Native Hawaiian/Other Pacific Islander students", "Students of two or more races", "Students eligible for National Lunch Program", "Students not eligible for National Lunch Program"]; //list of attributes
+
+// data that is expressed on the map
 var expressed = attrArray[0]; //initial attribute
 
 window.onload = setMap();
@@ -40,23 +43,26 @@ function setMap() {
 
     };
 };
-
+// joins shapefile with CSV data
 function joinData (us, csvData) {
-
+    // loops through csv to assign each set of csv attribute values to geojson state
     for (var i=0; i<csvData.length; i++) {
-        var csvState = csvData[i];
-        var csvKey = csvState.name;
+        var csvState = csvData[i]; // current state
+        var csvKey = csvState.name; // csv primary key
 
+        // loops through geojson regions to find correct state
         for (var a=0; a<us.length; a++) {
 
-            var geojsonProps = us[a].properties;
-            var geojsonKey = geojsonProps.name;
+            var geojsonProps = us[a].properties; // current state geojson
+            var geojsonKey = geojsonProps.name; //geojson primary key
 
+            // if the keys match, it transfers csv data to geojson properties object
             if (geojsonKey == csvKey) {
 
+                // assigns all attributes and values
                 attrArray.forEach(function(attr) {
-                    var val = parseFloat(csvState[attr]);
-                    geojsonProps[attr] = val;
+                    var val = parseFloat(csvState[attr]); //gets CSV attribute value
+                    geojsonProps[attr] = val; //assigns attribute and value to geojson properties
                 });
             };
         };
@@ -66,7 +72,6 @@ function joinData (us, csvData) {
 };
 
 function setEnumerationUnits(us, map, path, colorScale) {
-
     var states = map.selectAll(".states")
         .data(us)
         .enter()
@@ -80,7 +85,7 @@ function setEnumerationUnits(us, map, path, colorScale) {
             return choropleth(d.properties, colorScale);
         });
 }
-
+// creates a color scale for the choropleth map
 function makeColorScale(data) {
     var colorClasses = [
         "#bd0026",
@@ -89,25 +94,34 @@ function makeColorScale(data) {
         "#fecc5c",
         "#ffffb2"
     ];
-
-    var colorScale = d3.scale.quantile()
+    // creates color scale generator
+    var colorScale = d3.scale.threshold()
         .range(colorClasses);
 
+    // builds array of all values of the exxpressed attribute
     var domainArray = [];
     for (var i=0; i<data.length; i++) {
         var val = parseFloat(data[i][expressed]);
         domainArray.push(val);
     };
-
+    // creates clusters using k-means algorithm to create natural breaks
+    var clusters = ss.ckmeans(domainArray, 5);
+    // resets domain array to cluster minimums
+    domainArray = clusters.map(function(d) {
+        return d3.min(d);
+    });
+    // removes first value from domain array to create class breakpoints
+    domainArray.shift();
+    // assign array of last 4 cluster minimums as domain
     colorScale.domain(domainArray);
 
     return colorScale;
 
 };
-
+// dealing with null (NaN) values in the data and how it will be expressed in the choropleth map
 function choropleth(props, colorScale) {
     var val = parseFloat(props[expressed]);
-
+    // if the value doesn't exist, assign gray, if it's not NaN, then give it a color according to the color scale
     if (isNaN(val)) {
         return "#CCC";
     } else {
@@ -115,14 +129,16 @@ function choropleth(props, colorScale) {
     };
 };
 
+// creates coordinated bar chart
 function setChart(csvData, colorScale) {
+    // sets min and max of the data (depending on what attribute is expressed)
     var minmax = [
         d3.min(csvData, function(d) {
             return parseFloat(d[expressed]); }),
         d3.max(csvData, function(d) {
             return parseFloat(d[expressed]); })
     ];
-
+    // dimensions of the chart frame
     var chartWidth = window.innerWidth * 0.8,
         chartHeight = 473,
         leftPadding = 35,
@@ -131,23 +147,26 @@ function setChart(csvData, colorScale) {
         chartInnerWidth = chartWidth - leftPadding - rightPadding
         chartInnerHeight = chartHeight - topBottomPadding * 2,
         translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
-
+    // creates a second svg element to hold the bar chart
     var chart = d3.select("body")
         .append("svg")
         .attr("width", chartWidth)
         .attr("height", chartHeight)
         .attr("class", "chart");
 
+    // creates a rectangle to set a background fill
     var chartBackground = chart.append("rect")
         .attr("class", "chartBackground")
         .attr("width", chartInnerWidth)
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
 
+    // scales the size of the bars proportionally to the frame
     var yScale = d3.scale.linear()
         .range([chartHeight - 25, 0])
         .domain(minmax);
 
+    // sets bars for each state
     var bars = chart.selectAll(".bar")
         .data(csvData)
         .enter()
@@ -172,53 +191,31 @@ function setChart(csvData, colorScale) {
             return choropleth(d, colorScale);
         });
 
-    //create a text element for the chart title
+    //creates a text element for the chart title
     var chartTitle = chart.append("text")
-        .attr("x", 300)
-        .attr("y", 40)
+        .attr("x", 200)
+        .attr("y", 30)
         .attr("class", "chartTitle")
-        .text("Average score " + expressed[3] + " in each state");
+        .text("Average score for " + expressed.toLowerCase() + " in each state");
 
-    //create vertical axis generator
+    //creates vertical axis generator
     var yAxis = d3.svg.axis()
         .scale(yScale)
         .orient("left");
 
-    //place axis
+    //places axis on the chart
     var axis = chart.append("g")
         .attr("class", "axis")
         .attr("transform", translate)
         .call(yAxis);
 
-    //create frame for chart border
+    //creates a frame for chart border
     var chartFrame = chart.append("rect")
         .attr("class", "chartFrame")
         .attr("width", chartInnerWidth)
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
 };
-    // var bars = chart.selectAll(".bars")
-    //     .data(csvData)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("class", function(d) {
-    //         return "bars " + d.name;
-    //     })
-    //     .attr("width", chartWidth / csvData.length - 1)
-    //     .attr("x", function(d, i) {
-    //         return i * (chartWidth / csvData.length);
-    //     })
-    //     .attr("height", function(d) {
-    //         return yScale(parseFloat(d[expressed]));
-    //     })
-    //     .attr("y", function(d) {
-    //         return chartHeight - yScale(parseFloat(d[expressed]));
-    //     })
-    //     .style("fill", function(d) {
-    //         return choropleth(d, colorScale);
-    //     });
 
-
-// };
 
 })(); //last line of main.js
