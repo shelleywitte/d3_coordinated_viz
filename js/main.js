@@ -15,7 +15,10 @@ function setminMax(csvData) {
         d3.max(csvData, function(d) {
             return parseFloat(d[expressed]); })
     ];
+    return minmax;
 };
+
+
 
 // dimensions of the chart frame
 var chartWidth = window.innerWidth * 0.8,
@@ -27,10 +30,11 @@ var chartWidth = window.innerWidth * 0.8,
     chartInnerHeight = chartHeight - topBottomPadding * 2,
     translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
-    // scales the size of the bars proportionally to the frame
-var yScale = d3.scale.linear()
-    .range([chartHeight - 25, 0])
-    .domain(minmax);
+// scales the size of the bars proportionally to the frame
+//
+// var yScale = d3.scale.linear()
+//         .range([chartHeight - 25, 0])
+//         .domain(
 
 
 window.onload = setMap();
@@ -70,7 +74,7 @@ function setMap() {
 
         createDropdown(csvData);
 
-        setminMax(csvData);
+        // setminMax(csvData);
     };
 };
 // joins shapefile with CSV data
@@ -111,10 +115,9 @@ function setEnumerationUnits(us, map, path, colorScale) {
         })
         .attr("d", path)
         .style("fill", function(d){
-
             return choropleth(d.properties, colorScale);
         });
-}
+};
 // creates a color scale for the choropleth map
 function makeColorScale(data) {
     var colorClasses = [
@@ -161,6 +164,10 @@ function choropleth(props, colorScale) {
 
 // creates coordinated bar chart
 function setChart(csvData, colorScale) {
+
+    var yScale = d3.scale.linear()
+        .range()
+        .domain(setminMax(csvData));
 
     // creates a second svg element to hold the bar chart
     var chart = d3.select("body")
@@ -244,6 +251,8 @@ function changeAttribute(attribute, csvData) {
     var colorScale = makeColorScale(csvData);
 
     var states = d3.selectAll(".states")
+        .transition()
+        .duration(1000)
         .style("fill", function(d){
             return choropleth(d.properties, colorScale)
         });
@@ -252,12 +261,21 @@ function changeAttribute(attribute, csvData) {
         //re-sorts bars
         .sort(function(a, b){
             return b[expressed] - a[expressed];
-        });
+        })
+        .transition() //add animation
+        .delay(function(d, i){
+            return i * 20
+        })
+        .duration(500);
 
-    updateChart(bars, csvData.length, colorScale);
+    updateChart(bars, csvData.length, colorScale, csvData);
 };
 
-function updateChart(bars, n, colorScale){
+function updateChart(bars, n, colorScale, csvData){
+    var yScale = d3.scale.linear()
+        .range([chartHeight - 25, 0])
+        .domain(setminMax(csvData));
+
     bars.attr("x", function(d, i){
         return i * (chartInnerWidth / n) + leftPadding;
     })
