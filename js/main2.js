@@ -64,13 +64,13 @@ function joinData (us, csvData) {
     // loops through csv to assign each set of csv attribute values to geojson state
     for (var i=0; i<csvData.length; i++) {
         var csvState = csvData[i]; // current state
-        var csvKey = csvState.name; // csv primary key
+        var csvKey = csvState.adm1_code; // csv primary key
 
         // loops through geojson regions to find correct state
         for (var a=0; a<us.length; a++) {
 
             var geojsonProps = us[a].properties; // current state geojson
-            var geojsonKey = geojsonProps.name; //geojson primary key
+            var geojsonKey = geojsonProps.adm1_code; //geojson primary key
 
             // if the keys match, it transfers csv data to geojson properties object
             if (geojsonKey == csvKey) {
@@ -93,7 +93,7 @@ function setEnumerationUnits(us, map, path, colorScale) {
         .enter()
         .append("path")
         .attr("class", function(d) {
-            return "states " + d.properties.name;
+            return "states " + d.properties.adm1_code;
         })
         .attr("d", path)
         .style("fill", function(d){
@@ -180,7 +180,7 @@ function setChart(csvData, colorScale) {
             return b[expressed]-a[expressed]
         })
         .attr("class", function(d){
-            return "bar " + d.name;
+            return "bar " + d.adm1_code;
         })
         .attr("width", chartInnerWidth / csvData.length - 1)
         .on("mouseover", highlight)
@@ -291,16 +291,16 @@ function updateChart(bars, n, colorScale) {
 };
 
 function highlight(props) {
-    var selected = d3.selectAll("." + props.name)
+    var selected = d3.selectAll("." + props.adm1_code)
         .style({
-            "stroke": "blue",
-            "stroke-width": "2"
+            "stroke": "gray",
+            "stroke-width": "2.5"
         });
     setLabel(props);
 };
 
 function dehighlight(props) {
-    var selected = d3.selectAll("." + props.name)
+    var selected = d3.selectAll("." + props.adm1_code)
         .style({
             "stroke": function(){
                 return getStyle(this, "stroke")
@@ -320,7 +320,7 @@ function dehighlight(props) {
         return styleObject[styleName];
 
         d3.select(".infolabel")
-		      .remove();
+		    .remove();
     };
 };
 
@@ -334,7 +334,7 @@ function setLabel(props) {
         .append("div")
         .attr({
             "class": "infolabel",
-            "id": props.name + "_label"
+            "id": props.adm1_code + "_label"
         })
         .html(labelAttribute);
 
