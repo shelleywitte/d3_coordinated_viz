@@ -18,9 +18,6 @@
     fill-opacity: .5;
 }
 
-.bars{
-
-}
 
 .chart {
     float: right;
@@ -29,9 +26,9 @@
 
 .chartTitle {
     font-family: sans-serif;
-    font-size: 1.1em;
+    font-size: 1.3em;
     font-weight: bold;
-    word-wrap: normal;
+    font-style: italic;
 }
 
 .chartBackground {
@@ -78,18 +75,32 @@ option {
 
 .infolabel {
     position: absolute;
-    height: 50px;
-    min-width: 100px;
-    color: #000;
+    min-height: 30px;
+    min-width: 80px;
+    vertical-align: middle;
+    color: #222;
+    font-family: sans-serif;
+    text-shadow: #f5f5f5 0 1px 0;
     background-color: #fff;
+    opacity: 0.9;
     border: solid thin #808080;
-    padding: 5px 10px;
-    /*top: -75px;*/
+    border-radius: 2px;
+    padding: .5em;
+    top: -75px;
 }
 
-.infolabel h1 {
-    margin: 0 20px 0 0;
+.infolabel h5 {
+    margin: 0 6px 0 0;
     padding: 0;
     display: inline-block;
     line-height: 1em;
+    text-align: center;
+}
+
+.labelname {
+    color: #222;
+    font-size: 1.1em;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center
 }

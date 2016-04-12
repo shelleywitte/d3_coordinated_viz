@@ -36,52 +36,52 @@ function setMap() {
         .scale(750)
         .translate([width / 2, height / 2]);
 
-    var svg = d3.select("map")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    var filter = svg.append("defs")
-        .append("filter")
-        .attr("id", "drop-shadow")
-        .attr("height", "110%");
-
-    filter.append("feGaussianBlur")
-        .attr("in", "SourceAlpha")
-        .attr("stdDeviation", 1)
-        .attr("result", "blur");
-
-    filter.append("feOffset")
-        .attr("in", "blur")
-        .attr("dx", 1)
-        .attr("dy", 1)
-        .attr("result", "offsetBlur");
-
-    var feMerge = filter.append("feMerge");
-
-    feMerge.append("feMergeNode")
-        .attr("in", "offsetBlur")
-    feMerge.append("feMergeNode")
-        .attr("in", "SourceGraphic");
-
-    var gradient = svg.append("svg:defs")
-      .append("svg:linearGradient")
-        .attr("id", "gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "0%")
-        .attr("y2", "100%")
-        .attr("spreadMethod", "pad");
-
-    gradient.append("svg:stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#0F3871")
-        .attr("stop-opacity", 1);
-
-    gradient.append("svg:stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#175BA8")
-        .attr("stop-opacity", 1);
+    // var svg = d3.select("body")
+    //     .append("svg")
+    //     .attr("width", width)
+    //     .attr("height", height);
+    //
+    // var filter = svg.append("defs")
+    //     .append("filter")
+    //     .attr("id", "drop-shadow")
+    //     .attr("height", "110%");
+    //
+    // filter.append("feGaussianBlur")
+    //     .attr("in", "SourceAlpha")
+    //     .attr("stdDeviation", 1)
+    //     .attr("result", "blur");
+    //
+    // filter.append("feOffset")
+    //     .attr("in", "blur")
+    //     .attr("dx", 1)
+    //     .attr("dy", 1)
+    //     .attr("result", "offsetBlur");
+    //
+    // var feMerge = filter.append("feMerge");
+    //
+    // feMerge.append("feMergeNode")
+    //     .attr("in", "offsetBlur")
+    // feMerge.append("feMergeNode")
+    //     .attr("in", "SourceGraphic");
+    //
+    // var gradient = svg.append("svg:defs")
+    //   .append("svg:linearGradient")
+    //     .attr("id", "gradient")
+    //     .attr("x1", "0%")
+    //     .attr("y1", "0%")
+    //     .attr("x2", "0%")
+    //     .attr("y2", "100%")
+    //     .attr("spreadMethod", "pad");
+    //
+    // gradient.append("svg:stop")
+    //     .attr("offset", "0%")
+    //     .attr("stop-color", "#0F3871")
+    //     .attr("stop-opacity", 1);
+    //
+    // gradient.append("svg:stop")
+    //     .attr("offset", "100%")
+    //     .attr("stop-color", "#175BA8")
+    //     .attr("stop-opacity", 1);
 
     var path = d3.geo.path()
         .projection(projection);
@@ -170,7 +170,7 @@ function makeColorScale(data) {
     var colorScale = d3.scale.threshold()
         .range(colorClasses);
 
-    // builds array of all values of the exxpressed attribute
+    // builds array of all values of the expressed attribute
     var domainArray = [];
     for (var i=0; i<data.length; i++) {
         var val = parseFloat(data[i][expressed]);
@@ -240,10 +240,10 @@ function setChart(csvData, colorScale) {
     //creates a text element for the chart title
     var chartTitle = chart.append("text")
         .attr("x", 400)
-        .attr("y", 30)
+        .attr("y", 50)
         .attr("class", "chartTitle")
         .attr("text-anchor", "middle")
-        .text("Average score for " + expressed + " in each state");
+        .text("Average score for " + expressed);
 
     //creates vertical axis generator
     var yAxis = d3.svg.axis()
@@ -334,25 +334,26 @@ function updateChart(bars, n, colorScale) {
         })
 
         var chartTitle = d3.select(".chartTitle")
-        .text("Average score for " + expressed + " in each state");
+        .text("Average score for " + expressed);
 };
 
 function highlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
-            // "stroke": "gray",
-            "stroke-width": "2.0",
+            "stroke": "gray",
+            "stroke-width": "2.5",
             "fill-opacity": "1.0"
         });
     setLabel(props);
 };
 
+
 function dehighlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
-            // "stroke": function(){
-            //     return getStyle(this, "stroke")
-            // },
+            "stroke": function(){
+                return getStyle(this, "stroke")
+            },
             "stroke-width": function(){
                 return getStyle(this, "stroke-width")
             },
@@ -369,16 +370,17 @@ function dehighlight(props) {
         var styleObject = JSON.parse(styleText);
 
         return styleObject[styleName];
-
-        d3.select(".infolabel")
-		    .remove();
     };
+
+    d3.select(".infolabel")
+        .remove();
 };
+
 
 function setLabel(props) {
     //label content
-    var labelAttribute = "<h1>" + props[expressed] +
-        "</h1><b>" + expressed + "</b>";
+
+    var labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
 
     //create info label div
     var infolabel = d3.select("body")
@@ -391,7 +393,8 @@ function setLabel(props) {
 
     var stateName = infolabel.append("div")
         .attr("class", "labelname")
-        .html(props.name);
+        .html(props.name)
+
 };
 
 function moveLabel(){
