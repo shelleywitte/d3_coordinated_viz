@@ -36,6 +36,53 @@ function setMap() {
         .scale(750)
         .translate([width / 2, height / 2]);
 
+    var svg = d3.select("map")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var filter = svg.append("defs")
+        .append("filter")
+        .attr("id", "drop-shadow")
+        .attr("height", "110%");
+
+    filter.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", 1)
+        .attr("result", "blur");
+
+    filter.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", 1)
+        .attr("dy", 1)
+        .attr("result", "offsetBlur");
+
+    var feMerge = filter.append("feMerge");
+
+    feMerge.append("feMergeNode")
+        .attr("in", "offsetBlur")
+    feMerge.append("feMergeNode")
+        .attr("in", "SourceGraphic");
+
+    var gradient = svg.append("svg:defs")
+      .append("svg:linearGradient")
+        .attr("id", "gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
+        .attr("spreadMethod", "pad");
+
+    gradient.append("svg:stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#0F3871")
+        .attr("stop-opacity", 1);
+
+    gradient.append("svg:stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#175BA8")
+        .attr("stop-opacity", 1);
+
     var path = d3.geo.path()
         .projection(projection);
 
@@ -108,7 +155,7 @@ function setEnumerationUnits(us, map, path, colorScale) {
         .on("mousemove", moveLabel);
 
     var desc = states.append("desc")
-        .text('{"stroke": "#000", "stroke-width": "0.5px"}');
+        .text('{"stroke": "#ccc", "stroke-width": "0.9px"}');
 };
 // creates a color scale for the choropleth map
 function makeColorScale(data) {
@@ -293,8 +340,9 @@ function updateChart(bars, n, colorScale) {
 function highlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
-            "stroke": "gray",
-            "stroke-width": "2.5"
+            // "stroke": "gray",
+            "stroke-width": "2.0",
+            "fill-opacity": "1.0"
         });
     setLabel(props);
 };
@@ -302,11 +350,14 @@ function highlight(props) {
 function dehighlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
-            "stroke": function(){
-                return getStyle(this, "stroke")
-            },
+            // "stroke": function(){
+            //     return getStyle(this, "stroke")
+            // },
             "stroke-width": function(){
                 return getStyle(this, "stroke-width")
+            },
+            "fill-opacity": function(){
+                return getStyle(this, "fill-opacity")
             }
         });
 

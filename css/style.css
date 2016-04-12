@@ -12,10 +12,10 @@
 }
 
 .states {
-    stroke: #000;
-    stroke-width: 0.5px;
+    stroke: #ccc;
+    stroke-width: 1.0px;
     stroke-linecap: round;
-    fill-opacity: .7;
+    fill-opacity: .5;
 }
 
 .bars{
