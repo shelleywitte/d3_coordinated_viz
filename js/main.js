@@ -1,5 +1,7 @@
 (function(){
 
+//***GLOBAL VARIABLES***
+
 // variables for data join
 var attrArray = ["all students", "male students", "female students", "white students", "black students", "Hispanic students", "Asian students", "American Indian/Alaska native students", "native Hawaiian/other Pacific islander students", "students of two or more races", "students eligible for National School Lunch Program", "students not eligible for National School Lunch Program"]; //list of attributes
 
@@ -19,20 +21,32 @@ var chartWidth = 700,
     chartInnerHeight = chartHeight - topBottomPadding * 2,
     translate = "translate(" + leftPadding + "," + topBottomPadding + ")";
 
+//creates a text element for the chart title
+var chartTitle = d3.select("body")
+    .append("text")
+    .attr("class", "chartTitle")
+    .attr("text-anchor", "middle")
+    .text("Average science scores for ");
+
+// scale used to set the range of the y-axis scale and bar height in the chart
 var yScale = d3.scale.linear()
     .range([chartHeight - 20, 0])
     .domain([0, 200])
 
+
+// sets up when the browser laods
 window.onload = setMap();
 
+// creates map and other page elements; also loads data
 function setMap() {
-
+    // adds map to the body of the page; assigns width and hight properties
     var map = d3.select("body")
         .append("svg")
         .attr("class", "map")
         .attr("width", mapWidth)
         .attr("height", mapHeight);
 
+    // microscope image = SCIENCE!
     var microscope = d3.select("body")
         .append("img")
         .attr("class", "microscope")
@@ -40,29 +54,51 @@ function setMap() {
         .attr("width", 70)
         .attr("height", 70)
 
+    // page title
     var pageTitle = d3.select("body")
         .append("text")
         .attr("class", "pageTitle")
         .attr("text-anchor", "left")
         .html("Minding the (Achievement) Gap")
 
+    //Albers USA projection to include scaled AK and HI
     var projection = d3.geo.albersUsa()
         .scale(950)
         .translate([mapWidth / 2, mapHeight / 2]);
 
+    // achievement gap title and subsequent description
     var agTitle = d3.select("body")
         .append("text")
         .attr("class", "agTitle")
         .attr("text-anchor", "left")
         .html("<h2> What is the achievement gap?</h2>")
 
-    var backgroundText = d3.select("body")
+    var agText = d3.select("body")
         .append("text")
-        .attr("class", "naepTitle")
+        .attr("class", "agText")
         .attr("text-anchor", "left")
-        .html("<h2>The National Assessment of Educational Progress (NAEP)</h2>")
+        .html("<p>An achievement gap is the disparity in educational performance between two or more groups of students. This disparity is typically seen between particular demographics of students such as gender, race/ethnicity, and socioeconomic status. Often, in the United States, measures of educational achievement gaps are used to highlight the disparity between white students and their black or Hispanic peers as well as the potential long-term, societal consequences those gaps have on these particular groups.</p>")
+
+    var measTitle = d3.select("body")
+        .append("text")
+        .attr("class", "measTitle")
+        .attr("text-anchor", "left")
+        .html("<h2>Measuring the Achievement Gap</h2>")
+
+    var measText = d3.select("body")
+        .append("text")
+        .attr("class", "measText")
+        .attr("text-anchor", "left")
+        .html("<p>There are a variety of measures of educational achievement including student grade-point average, high school graduation rates, national standardized test scores, and college enrollment and completion rates.<br><br> This map shows the average <b><u>science assessment scores for 8th grade students</b></u> by state, for 2011. The National Assessment of Education Progress (NAEP) is the largest nationally representative assessment of student knowledge in mutiple subject areas. The tests are given at critical junctures in academic achievement, specifically grades 4, 8, and 12. <br><br>Scores and proficiency levels for the NAEP tests are particular to one subject and grade combination and cannot be compared across grades or subjects. The score breakdown for 8th grade science assessment is: <br><br><i>Basic </i>:  141 <br><i>Proficient </i>:  170 <br><i>Advanced </i>:  215 </p>")
+
+    var sources = d3.select("body")
+		.append("text")
+		.attr("class", "sources")
+		.html("<h3>Sources & Links:</h3><h4><a href='http://nces.ed.gov/nationsreportcard/about/'>National Assessment of Education Progress overview</a> <br> <a href='http://www.nationsreportcard.gov/science_2011/about_science.aspx'>About the NAEP Science Assessment</a> <br> <a href='http://nces.ed.gov/nationsreportcard/science/achieve.aspx'>NAEP Science Achievement Levels</a> <br> <a href='http://nces.ed.gov/nationsreportcard/naepdata/'>NAEP NAEP Data Explorer <i>(source of data)</i> </a> </h4>")
 
 
+
+// attempt at adding dropshadow to United States map
     // var svg = d3.select("body")
     //     .append("svg")
     //     .attr("width", width)
@@ -110,14 +146,17 @@ function setMap() {
     //     .attr("stop-color", "#175BA8")
     //     .attr("stop-opacity", 1);
 
+    // projects map
     var path = d3.geo.path()
         .projection(projection);
 
+    // loading data files
     d3_queue.queue()
         .defer(d3.csv, "data/8th_grade_science_achievement_gap.csv")
         .defer(d3.json, "data/US_shapefile.topojson")
         .await(callback);
 
+    // callback function that loads the data; data waits to be called
     function callback(error, csvData, unitedStates) {
         var us = topojson.feature(unitedStates, unitedStates.objects.US_shapefile).features;
 
@@ -161,6 +200,7 @@ function joinData (us, csvData) {
     return us;
 };
 
+// sets up the state boundaries and event listeners for hover highlighting
 function setEnumerationUnits(us, map, path, colorScale) {
     var states = map.selectAll(".states")
         .data(us)
@@ -175,11 +215,11 @@ function setEnumerationUnits(us, map, path, colorScale) {
         })
         .on("mouseover", function(d){
             highlight(d.properties);
-            // select the parent and sort the path's
+            // select the paths of the state borders and sort them
             map.selectAll("path").sort(function (a, b) {
-                // a is not the clicked element, send "a" to the back
+                // a is not the mouseover element, send "a" to the back
                 if (a != d) return -1;
-                // a is the clicked element, bring "a" to the front
+                // a is the mouseover element, bring "a" to the front
                 else return 1;
             });
         })
@@ -188,8 +228,9 @@ function setEnumerationUnits(us, map, path, colorScale) {
         })
         .on("mousemove", moveLabel);
 
+    // original properties for state boundaries (for mousemove)
     var desc = states.append("desc")
-        .text('{"stroke": "#ccc", "stroke-width": "0.9px"}');
+        .text('{"stroke": "#ccc", "stroke-width": "1.0px"}');
 };
 // creates a color scale for the choropleth map
 function makeColorScale(data) {
@@ -263,20 +304,13 @@ function setChart(csvData, colorScale) {
         .attr("class", function(d){
             return "bar " + d.adm1_code;
         })
-        .attr("width", chartInnerWidth / csvData.length - 1.5)
+        .attr("width", chartInnerWidth / csvData.length - 2)
         .on("mouseover", highlight)
         .on("mouseout", dehighlight)
         .on("mousemove", moveLabel);
 
     var desc = bars.append("desc")
         .text('{"stroke": "none", "stroke-width": "0px"}');
-
-    //creates a text element for the chart title
-    var chartTitle = d3.select("body")
-        .append("text")
-        .attr("class", "chartTitle")
-        .attr("text-anchor", "middle")
-        .text("Average score for " + expressed);
 
     //creates vertical axis generator
     var yAxis = d3.svg.axis()
@@ -296,11 +330,19 @@ function setChart(csvData, colorScale) {
         .attr("height", chartInnerHeight)
         .attr("transform", translate);
 
+    var chartText = chart.append("text")
+        .attr("class", "chartText")
+        .attr("text-anchor", "right")
+        .attr("x", 483)
+        .attr("y", 27)
+        .text("Overall National Average: 151.73");
+
     updateChart(bars, csvData.length, colorScale);
 };
 
+// creates dropdown menu for changing attributes
 function createDropdown(csvData){
-    //add select element
+    //adds select element
     var dropdown = d3.select("body")
         .append("select")
         .attr("class", "dropdown")
@@ -308,13 +350,13 @@ function createDropdown(csvData){
             changeAttribute(this.value, csvData)
         });
 
-    //add initial option
+    //adds initial option
     var titleOption = dropdown.append("option")
         .attr("class", "titleOption")
         .attr("disabled", "true")
-        .text("Select student group");
+        .text("Select student group (demographics)");
 
-    //add attribute name options
+    //adds attribute name options (what you see when the menu opens; i.e. attribute names)
     var attrOptions = dropdown.selectAll("attrOptions")
         .data(attrArray)
         .enter()
@@ -323,14 +365,15 @@ function createDropdown(csvData){
         .text(function(d){ return d });
 };
 
+// function that sets what happens to the map and chart when you change an attribute via the dropdown
 function changeAttribute(attribute, csvData){
-    //change the expressed attribute
+    //changes the expressed attribute
     expressed = attribute;
 
-    //recreate the color scale
+    //recreates the color scale
     var colorScale = makeColorScale(csvData);
 
-    //recolor enumeration units
+    //recolors enumeration units
     var states = d3.selectAll(".states")
         .transition()
         .duration(1000)
@@ -339,7 +382,7 @@ function changeAttribute(attribute, csvData){
         });
 
     var bars = d3.selectAll(".bar")
-        //re-sort bars
+        //re-sorts bars after attribute change
         .sort(function(a, b){
             return b[expressed] - a[expressed];
         })
@@ -349,9 +392,11 @@ function changeAttribute(attribute, csvData){
         })
         .duration(500);
 
+    // sending these changes to the updateChart function
     updateChart(bars, csvData.length, colorScale);
 };
 
+// function that actually updates the chart and map when attributes change
 function updateChart(bars, n, colorScale) {
     bars.attr("x", function(d, i){
             return i * (chartInnerWidth / n) + leftPadding;
@@ -367,9 +412,10 @@ function updateChart(bars, n, colorScale) {
         })
 
         var chartTitle = d3.select(".chartTitle")
-        .text("Average score for " + expressed);
+        .text("Average science scores for ");
 };
 
+// function that defines what happens when you hover over a state
 function highlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
@@ -380,7 +426,7 @@ function highlight(props) {
     setLabel(props);
 };
 
-
+// retores pre-hover style properties upon mouseout
 function dehighlight(props) {
     var selected = d3.selectAll("." + props.adm1_code)
         .style({
@@ -395,6 +441,7 @@ function dehighlight(props) {
             }
         });
 
+    // retrieves the information stored in the desc element  for the oririnal style
     function getStyle(element, styleName){
         var styleText = d3.select(element)
             .select("desc")
@@ -405,14 +452,25 @@ function dehighlight(props) {
         return styleObject[styleName];
     };
 
+    // removes the map hover label upon mousemove
     d3.select(".infolabel")
         .remove();
 };
 
-
+// sets up the label that retrieves state name and score for selected attribute
 function setLabel(props) {
-    //label content
 
+    //pop-up content for each state
+    var labelAttribute = props[expressed]
+
+    // attempt at addresses null values in data... did not work
+    // if (isNaN()(props[expressed])) {
+    //     labelAttribute = "No data"
+    // } else {
+    //     labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
+    // };
+
+    // label seen in pop-up
     var labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
 
     //create info label div
@@ -429,7 +487,7 @@ function setLabel(props) {
         .html(props.name)
 
 };
-
+// creates dynamic label that changes with mouseover on the map
 function moveLabel(){
     //get width of label
     var labelWidth = d3.select(".infolabel")
