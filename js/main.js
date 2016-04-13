@@ -463,15 +463,12 @@ function setLabel(props) {
     //pop-up content for each state
     var labelAttribute = props[expressed]
 
-    // attempt at addresses null values in data... did not work
-    // if (isNaN()(props[expressed])) {
-    //     labelAttribute = "No data"
-    // } else {
-    //     labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
-    // };
+    if (Boolean(props[expressed]) == true) {
+        labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
+      } else {
+        labelAttribute = "No data"
+      };
 
-    // label seen in pop-up
-    var labelAttribute = "<h5> Average score: " + parseFloat(props[expressed]).toFixed(1) + "</h5><b>" + "</b>"
 
     //create info label div
     var infolabel = d3.select("body")
